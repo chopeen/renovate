@@ -92,9 +92,9 @@ describe('util/template/index', () => {
   });
 
   it('and has no access to other environment variables', () => {
-    const userTemplate = '{{LOGNAME}} {{UID}}';
+    const userTemplate = '{{LOGNAME}} {{UID}} {{SHELL}}';
     const output = template.compile(userTemplate, undefined as never);
-    expect(output).toBeEmpty();
+    expect(output).toBe('  ');
   });
 
   describe('proxyCompileInput', () => {
