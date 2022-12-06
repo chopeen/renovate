@@ -2,6 +2,7 @@ import is from '@sindresorhus/is';
 import handlebars from 'handlebars';
 import { GlobalConfig } from '../../config/global';
 import { logger } from '../../logger';
+import { getChildProcessEnv } from '../../util/exec/env';
 
 handlebars.registerHelper('encodeURIComponent', encodeURIComponent);
 
@@ -155,21 +156,21 @@ const prBodyFields = [
 
 const handlebarsUtilityFields = ['else'];
 
-const env = process.env;
-const envFields = Object.keys(env);
+const childProcessEnv = getChildProcessEnv();
+const childProcessEnvFields = Object.keys(childProcessEnv);
 
 const allowedFieldsList = Object.keys(allowedFields)
   .concat(exposedConfigOptions)
   .concat(prBodyFields)
   .concat(handlebarsUtilityFields)
-  .concat(envFields);
+  .concat(childProcessEnvFields);
 
 type CompileInput = Record<string, unknown>;
 
 const allowedTemplateFields = new Set([
   ...Object.keys(allowedFields),
   ...exposedConfigOptions,
-  ...envFields,
+  ...childProcessEnvFields,
 ]);
 
 const compileInputProxyHandler: ProxyHandler<CompileInput> = {
@@ -206,7 +207,7 @@ export function compile(
   input: CompileInput,
   filterFields = true
 ): string {
-  const data = { ...GlobalConfig.get(), ...input, ...env };
+  const data = { ...GlobalConfig.get(), ...input, ...childProcessEnv };
   const filteredInput = filterFields ? proxyCompileInput(data) : data;
   logger.trace({ template, filteredInput }, 'Compiling template');
   if (filterFields) {
