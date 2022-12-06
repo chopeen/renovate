@@ -1,5 +1,17 @@
+import { GlobalConfig } from '../../config/global';
 import { getOptions } from '../../config/options';
 import * as template from '.';
+
+beforeAll(() => {
+  GlobalConfig.set(
+    {
+      customEnvVariables: {
+        'CUSTOM_VAR_1': 'foo',
+        'CUSTOM_VAR_2': 'bar',
+      }
+    }
+  );
+});
 
 describe('util/template/index', () => {
   it('has valid exposed config options', () => {
@@ -85,13 +97,19 @@ describe('util/template/index', () => {
     expect(output).toBe('foo');
   });
 
-  it('has access to allowed environment variables (basicEnvVars)', () => {
+  it('has access to basic environment variables (basicEnvVars)', () => {
     const userTemplate = 'HOME is {{HOME}}';
     const output = template.compile(userTemplate, undefined as never);
     expect(output).toBe(`HOME is ${process.env.HOME ?? ''}`);
   });
 
-  it('and has no access to other environment variables', () => {
+  it('and has access to custom environment variables (customEnvVars)', () => {
+    const userTemplate = '{{CUSTOM_VAR_1}}{{CUSTOM_VAR_2}}';
+    const output = template.compile(userTemplate, undefined as never);
+    expect(output).toBe('foobar');
+  });
+
+  it('and does not have access to other environment variables', () => {
     const userTemplate = '{{LOGNAME}} {{UID}} {{SHELL}}';
     const output = template.compile(userTemplate, undefined as never);
     expect(output).toBe('  ');
