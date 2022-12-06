@@ -156,7 +156,8 @@ const prBodyFields = [
 
 const handlebarsUtilityFields = ['else'];
 
-const childProcessEnv = getChildProcessEnv();
+const customEnvVarsKeys = Object.keys(GlobalConfig.get('customEnvVariables') ?? {});
+const childProcessEnv = getChildProcessEnv(customEnvVarsKeys);
 const childProcessEnvFields = Object.keys(childProcessEnv);
 
 const allowedFieldsList = Object.keys(allowedFields)
