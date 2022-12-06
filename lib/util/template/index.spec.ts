@@ -88,7 +88,7 @@ describe('util/template/index', () => {
   it('has access to allowed environment variables (basicEnvVars)', () => {
     const userTemplate = 'HOME is {{HOME}}';
     const output = template.compile(userTemplate, undefined as never);
-    expect(output).toBe(`HOME is ${process.env.HOME}`);
+    expect(output).toBe(`HOME is ${process.env.HOME ?? ''}`);
   });
 
   it('and has no access to other environment variables', () => {
