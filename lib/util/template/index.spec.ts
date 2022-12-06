@@ -85,6 +85,18 @@ describe('util/template/index', () => {
     expect(output).toBe('foo');
   });
 
+  it('has access to allowed environment variables (basicEnvVars)', () => {
+    const userTemplate = 'HOME is {{HOME}}';
+    const output = template.compile(userTemplate, undefined as never);
+    expect(output).toBe(`HOME is ${process.env.HOME}`);
+  });
+
+  it('and has no access to other environment variables', () => {
+    const userTemplate = '{{LOGNAME}} {{UID}}';
+    const output = template.compile(userTemplate, undefined as never);
+    expect(output).toBeEmpty();
+  });
+
   describe('proxyCompileInput', () => {
     const allowedField = 'body';
     const forbiddenField = 'foobar';
