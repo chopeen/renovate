@@ -155,16 +155,21 @@ const prBodyFields = [
 
 const handlebarsUtilityFields = ['else'];
 
+const env = process.env;
+const envFields = Object.keys(env);
+
 const allowedFieldsList = Object.keys(allowedFields)
   .concat(exposedConfigOptions)
   .concat(prBodyFields)
-  .concat(handlebarsUtilityFields);
+  .concat(handlebarsUtilityFields)
+  .concat(envFields);
 
 type CompileInput = Record<string, unknown>;
 
 const allowedTemplateFields = new Set([
   ...Object.keys(allowedFields),
   ...exposedConfigOptions,
+  ...envFields,
 ]);
 
 const compileInputProxyHandler: ProxyHandler<CompileInput> = {
@@ -201,7 +206,7 @@ export function compile(
   input: CompileInput,
   filterFields = true
 ): string {
-  const data = { ...GlobalConfig.get(), ...input };
+  const data = { ...GlobalConfig.get(), ...input, ...env };
   const filteredInput = filterFields ? proxyCompileInput(data) : data;
   logger.trace({ template, filteredInput }, 'Compiling template');
   if (filterFields) {
