@@ -156,26 +156,11 @@ const prBodyFields = [
 
 const handlebarsUtilityFields = ['else'];
 
-const customEnvVarsKeys = Object.keys(GlobalConfig.get('customEnvVariables') ?? {});
-const childProcessEnv = getChildProcessEnv(customEnvVarsKeys);
-const childProcessEnvFields = Object.keys(childProcessEnv);
-
-const allowedFieldsList = Object.keys(allowedFields)
-  .concat(exposedConfigOptions)
-  .concat(prBodyFields)
-  .concat(handlebarsUtilityFields)
-  .concat(childProcessEnvFields);
-
 type CompileInput = Record<string, unknown>;
-
-const allowedTemplateFields = new Set([
-  ...Object.keys(allowedFields),
-  ...exposedConfigOptions,
-  ...childProcessEnvFields,
-]);
 
 const compileInputProxyHandler: ProxyHandler<CompileInput> = {
   get(target: CompileInput, prop: keyof CompileInput): unknown {
+    const allowedTemplateFields = getAllowedTemplateFields();
     if (!allowedTemplateFields.has(prop)) {
       return undefined;
     }
@@ -196,6 +181,39 @@ const compileInputProxyHandler: ProxyHandler<CompileInput> = {
   },
 };
 
+export function getAllowedFieldsList(): string[] {
+  const customEnvVars = Object.keys(
+    GlobalConfig.get('customEnvVariables') ?? {}
+  );
+  const childProcessEnv = getChildProcessEnv(customEnvVars);
+  const childProcessEnvFields = Object.keys(childProcessEnv);
+
+  const allowedFieldsList = Object.keys(allowedFields)
+    .concat(exposedConfigOptions)
+    .concat(prBodyFields)
+    .concat(handlebarsUtilityFields)
+    .concat(childProcessEnvFields);
+
+  return allowedFieldsList;
+}
+
+export function getAllowedTemplateFields(): Set<string> {
+  const foo = GlobalConfig.get('customEnvVariables') ?? {};
+  const customEnvVars = Object.keys(
+    GlobalConfig.get('customEnvVariables') ?? {}
+  );
+  const childProcessEnv = getChildProcessEnv(customEnvVars);
+  const childProcessEnvFields = Object.keys(childProcessEnv);
+
+  const allowedTemplateFields = new Set([
+    ...Object.keys(allowedFields),
+    ...exposedConfigOptions,
+    ...childProcessEnvFields,
+  ]);
+
+  return allowedTemplateFields;
+}
+
 export function proxyCompileInput(input: CompileInput): CompileInput {
   return new Proxy<CompileInput>(input, compileInputProxyHandler);
 }
@@ -208,6 +226,11 @@ export function compile(
   input: CompileInput,
   filterFields = true
 ): string {
+  const customEnvVars = Object.keys(
+    GlobalConfig.get('customEnvVariables') ?? {}
+  );
+  const childProcessEnv = getChildProcessEnv(customEnvVars);
+
   const data = { ...GlobalConfig.get(), ...input, ...childProcessEnv };
   const filteredInput = filterFields ? proxyCompileInput(data) : data;
   logger.trace({ template, filteredInput }, 'Compiling template');
@@ -215,6 +238,7 @@ export function compile(
     const matches = template.matchAll(templateRegex);
     for (const match of matches) {
       const varNames = match[1].split('.');
+      const allowedFieldsList = getAllowedFieldsList();
       for (const varName of varNames) {
         if (!allowedFieldsList.includes(varName)) {
           logger.info(
