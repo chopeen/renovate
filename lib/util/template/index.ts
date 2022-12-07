@@ -2,7 +2,7 @@ import is from '@sindresorhus/is';
 import handlebars from 'handlebars';
 import { GlobalConfig } from '../../config/global';
 import { logger } from '../../logger';
-import { getChildProcessEnv } from '../../util/exec/env';
+import { getChildEnv } from '../exec';
 
 handlebars.registerHelper('encodeURIComponent', encodeURIComponent);
 
@@ -155,7 +155,6 @@ const prBodyFields = [
 ];
 
 const handlebarsUtilityFields = ['else'];
-
 type CompileInput = Record<string, unknown>;
 
 const compileInputProxyHandler: ProxyHandler<CompileInput> = {
@@ -182,33 +181,26 @@ const compileInputProxyHandler: ProxyHandler<CompileInput> = {
 };
 
 export function getAllowedFieldsList(): string[] {
-  const customEnvVars = Object.keys(
-    GlobalConfig.get('customEnvVariables') ?? {}
-  );
-  const childProcessEnv = getChildProcessEnv(customEnvVars);
-  const childProcessEnvFields = Object.keys(childProcessEnv);
+  const childEnv = getChildEnv({})
+  const childEnvFields = Object.keys(childEnv);
 
   const allowedFieldsList = Object.keys(allowedFields)
     .concat(exposedConfigOptions)
     .concat(prBodyFields)
     .concat(handlebarsUtilityFields)
-    .concat(childProcessEnvFields);
+    .concat(childEnvFields);
 
   return allowedFieldsList;
 }
 
 export function getAllowedTemplateFields(): Set<string> {
-  const foo = GlobalConfig.get('customEnvVariables') ?? {};
-  const customEnvVars = Object.keys(
-    GlobalConfig.get('customEnvVariables') ?? {}
-  );
-  const childProcessEnv = getChildProcessEnv(customEnvVars);
-  const childProcessEnvFields = Object.keys(childProcessEnv);
+  const childEnv = getChildEnv({})
+  const childEnvFields = Object.keys(childEnv);
 
   const allowedTemplateFields = new Set([
     ...Object.keys(allowedFields),
     ...exposedConfigOptions,
-    ...childProcessEnvFields,
+    ...childEnvFields,
   ]);
 
   return allowedTemplateFields;
@@ -226,12 +218,7 @@ export function compile(
   input: CompileInput,
   filterFields = true
 ): string {
-  const customEnvVars = Object.keys(
-    GlobalConfig.get('customEnvVariables') ?? {}
-  );
-  const childProcessEnv = getChildProcessEnv(customEnvVars);
-
-  const data = { ...GlobalConfig.get(), ...input, ...childProcessEnv };
+  const data = { ...GlobalConfig.get(), ...getChildEnv({}), ...input };
   const filteredInput = filterFields ? proxyCompileInput(data) : data;
   logger.trace({ template, filteredInput }, 'Compiling template');
   if (filterFields) {
