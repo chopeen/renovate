@@ -96,7 +96,7 @@ describe('util/template/index', () => {
     expect(output).toBe(`HOME is ${process.env.HOME ?? ''}`);
   });
 
-  it('and has access to environment variables exposed with customEnvVars', () => {
+  it('and has access to environment variables exposed with customEnvVariables', () => {
     GlobalConfig.set({
       customEnvVariables: {
         SHELL: process.env.SHELL,
@@ -107,7 +107,7 @@ describe('util/template/index', () => {
     expect(output).toBe(`SHELL is ${process.env.SHELL ?? ''}`);
   });
 
-  it('and has access to custom variables defined with customEnvVars', () => {
+  it('and has access to custom variables defined with customEnvVariables', () => {
     GlobalConfig.set({
       customEnvVariables: {
         CUSTOM_FOO: 'foo',
