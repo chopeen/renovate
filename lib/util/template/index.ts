@@ -185,7 +185,7 @@ function getChildEnvFields() :string[] {
   return Object.keys(childEnv);
 }
 
-export function getAllowedFieldsList(): string[] {
+function getAllowedFieldsList(): string[] {
   const allowedFieldsList = Object.keys(allowedFields)
     .concat(exposedConfigOptions)
     .concat(prBodyFields)
@@ -195,7 +195,7 @@ export function getAllowedFieldsList(): string[] {
   return allowedFieldsList;
 }
 
-export function getAllowedTemplateFields(): Set<string> {
+function getAllowedTemplateFields(): Set<string> {
   const allowedTemplateFields = new Set([
     ...Object.keys(allowedFields),
     ...exposedConfigOptions,
