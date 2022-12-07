@@ -99,7 +99,7 @@ describe('util/template/index', () => {
   it('and has access to environment variables exposed with customEnvVars', () => {
     GlobalConfig.set({
       customEnvVariables: {
-        SHELL: '[value to be retrieved from environment]',
+        SHELL: process.env.SHELL,
       },
     });
     const userTemplate = 'SHELL is {{SHELL}}';
