@@ -180,27 +180,26 @@ const compileInputProxyHandler: ProxyHandler<CompileInput> = {
   },
 };
 
-export function getAllowedFieldsList(): string[] {
+function getChildEnvFields() :string[] {
   const childEnv = getChildEnv({})
-  const childEnvFields = Object.keys(childEnv);
+  return Object.keys(childEnv);
+}
 
+export function getAllowedFieldsList(): string[] {
   const allowedFieldsList = Object.keys(allowedFields)
     .concat(exposedConfigOptions)
     .concat(prBodyFields)
     .concat(handlebarsUtilityFields)
-    .concat(childEnvFields);
+    .concat(getChildEnvFields());
 
   return allowedFieldsList;
 }
 
 export function getAllowedTemplateFields(): Set<string> {
-  const childEnv = getChildEnv({})
-  const childEnvFields = Object.keys(childEnv);
-
   const allowedTemplateFields = new Set([
     ...Object.keys(allowedFields),
     ...exposedConfigOptions,
-    ...childEnvFields,
+    ...getChildEnvFields(),
   ]);
 
   return allowedTemplateFields;
